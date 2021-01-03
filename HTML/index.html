@@ -32,39 +32,19 @@
 
     <script>
         if (typeof web3 !== 'undefined') {
-            console.log("Current provider")
+            console.log("Using current provider")
             web3 = new Web3(web3.currentProvider);
         } else {
             // set the provider you want from Web3.providers
             web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:7545"));
-            console.log("ganache");
+            console.log("Using ganache (localhost)");
         }
-
-        var cuentaMaster;
-
-        const myFunc = async () => {
-            try {
-                const myAccounts = await web3.eth.getAccounts();
-                console.log("Mis cuenta" + myAccounts[0])
-                cuentaMaster = myAccounts[0];
-                return myAccounts[0];
-
-            } catch (err) {
-                console.log(err);
-            }
-        }
-
-        myFunc()
-
-        web3.eth.defaultAccount = web3.eth.accounts[0];
-        var cuenta = myFunc();
-        cuenta.then((value) => console.log("Mi uenta =  " + value));
 
         var contract = new web3.eth.Contract([
             {
                 "constant": true,
                 "inputs": [],
-                "name": "getInstructor",
+                "name": "getData",
                 "outputs": [
                     {
                         "internalType": "string",
@@ -95,31 +75,44 @@
                         "type": "uint256"
                     }
                 ],
-                "name": "setInstructor",
+                "name": "setData",
                 "outputs": [],
                 "payable": false,
                 "stateMutability": "nonpayable",
                 "type": "function"
             }
-        ], "0xc8ec6D632b7CBa179EbF64B2179846373C43587B");
+        ], "0xFd5100cEAC660C1Abefa729d8AdEB955B02e2Bf0");
 
+        var cuentaMaster;
+        const getAccount = async () => {
+            try {
+                const myAccounts = await web3.eth.getAccounts();
+                cuentaMaster = myAccounts[0];
+                console.log("Master account " + cuentaMaster);                
+                return myAccounts[0];
 
-    </script>
+            } catch (err) {
+                console.log(err);
+            }
+        }
+      
+        getAccount();
 
-    <script>
-        var instructor = contract.methods.getInstructor().call();
-        console.log("Instructor " + JSON.stringify(instructor));
+        web3.eth.defaultAccount = web3.eth.accounts[0];
 
-        contract.methods.getInstructor().call({ from: '0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe' })
+        var data = contract.methods.getData().call();
+        console.log("Data is empty because the call is async " + JSON.stringify(data));
+
+        contract.methods.getData().call()
             .then(function (result) {
-                console.log("mi res " + JSON.stringify(result))
+                console.log("Data using 'then' = " + JSON.stringify(result))
             });
 
-
-        $("#button").click(function () {
-            contract.methods.setInstructor($("#name").val(), $("#age").val()).send({ from: cuentaMaster });
-        });
-
+            $("#button").click(function () {
+                    var name = $("#name").val();
+                    var age = $("#age").val();
+                    contract.methods.setData(name, age).send({ from: cuentaMaster });
+                });
     </script>
 </body>
 
