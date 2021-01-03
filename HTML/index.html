@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Web3 demo</title>
+
+    <link rel="stylesheet" type="text/css" href="main.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.3.1/web3.min.js"
+        integrity="sha512-96ZCo0pzD4x2MuBZCB4ipirFKs/X/xB2diGU/A7zpfaltISM309KN79pyWe4l9IdtOlzitRltfVcxgdTEbcnvQ=="
+        crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+</head>
+
+<body>
+    <div class="container">
+
+        <h1>Demo web3</h1>
+
+        <label for="name" class="col-lg-2 control-label">Name</label>
+        <input id="name" type="text">
+
+        <label for="name" class="col-lg-2 control-label">Age</label>
+        <input id="age" type="text">
+
+        <button id="button">Save</button>
+    </div>
+
+
+    <script>
+        if (typeof web3 !== 'undefined') {
+            console.log("Current provider")
+            web3 = new Web3(web3.currentProvider);
+        } else {
+            // set the provider you want from Web3.providers
+            web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:7545"));
+            console.log("ganache");
+        }
+
+        var cuentaMaster;
+
+        const myFunc = async () => {
+            try {
+                const myAccounts = await web3.eth.getAccounts();
+                console.log("Mis cuenta" + myAccounts[0])
+                cuentaMaster = myAccounts[0];
+                return myAccounts[0];
+
+            } catch (err) {
+                console.log(err);
+            }
+        }
+
+        myFunc()
+
+        web3.eth.defaultAccount = web3.eth.accounts[0];
+        var cuenta = myFunc();
+        cuenta.then((value) => console.log("Mi uenta =  " + value));
+
+        var contract = new web3.eth.Contract([
+            {
+                "constant": true,
+                "inputs": [],
+                "name": "getInstructor",
+                "outputs": [
+                    {
+                        "internalType": "string",
+                        "name": "",
+                        "type": "string"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "payable": false,
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "constant": false,
+                "inputs": [
+                    {
+                        "internalType": "string",
+                        "name": "_name",
+                        "type": "string"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "_age",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "setInstructor",
+                "outputs": [],
+                "payable": false,
+                "stateMutability": "nonpayable",
+                "type": "function"
+            }
+        ], "0xc8ec6D632b7CBa179EbF64B2179846373C43587B");
+
+
+    </script>
+
+    <script>
+        var instructor = contract.methods.getInstructor().call();
+        console.log("Instructor " + JSON.stringify(instructor));
+
+        contract.methods.getInstructor().call({ from: '0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe' })
+            .then(function (result) {
+                console.log("mi res " + JSON.stringify(result))
+            });
+
+
+        $("#button").click(function () {
+            contract.methods.setInstructor($("#name").val(), $("#age").val()).send({ from: cuentaMaster });
+        });
+
+    </script>
+</body>
+
+</html>
